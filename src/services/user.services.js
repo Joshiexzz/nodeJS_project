@@ -18,11 +18,56 @@ export const loginUserService =async(loginData)=>{
     }
 }
 
-export const getAllUsersService= async (dataget)=>{
-    const usersData=[
-        {email: "AJ@gmail.com",password:"AJ"},
-        {email: "AC@gmail.com", password:"AC"},
-        {email: "PB@gmail.com",password:"PB"},
-    ];
-    return usersData; 
+// export const getAllUsersService= async (dataget)=>{
+//     const usersData=[
+//         {email: "AJ@gmail.com",password:"AJ"},
+//         {email: "AC@gmail.com", password:"AC"},
+//         {email: "PB@gmail.com",password:"PB"}
+//     ];
+//     return usersData; 
+// }
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+ export async function getAllUsersService() {
+  // ... you will write your Prisma Client queries here
+  const allUsers = await prisma.user.findMany()
+  return allUsers;
 }
+
+getAllUsersService()
+  .then(async () => {
+    await prisma.$disconnect()
+  })
+  .catch(async (e) => {
+    console.error(e)
+    await prisma.$disconnect()
+    process.exit(1)
+  })
+
+export async function writeUsersService() {
+    await prisma.user.create({
+      data: {
+        id:'7',
+        fullName: 'AJ',
+        email: 'AJ@gmail.com',
+        password:'qwerty',
+        gender:'Male'
+        // posts: {
+        //   create: { title: 'Hello World' },
+        // },
+        // profile: {
+        //   create: { bio: 'I like turtles' },
+        // },
+      },
+    })
+  
+    const allUsers = await prisma.user.findMany({
+    //   include: {
+    //     posts: true,
+    //     profile: true,
+    //   },
+    })
+    console.dir(allUsers, { depth: null })
+  }
