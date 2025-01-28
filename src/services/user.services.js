@@ -1,73 +1,34 @@
-export const userFirstService= async (args)=>{
-    console.log("Reached service layer")
-    console.log("Doing some database work")
-    const someDataFromDatabase ="My Data"
-    return someDataFromDatabase
-}
+import { prisma } from "../db/index.js";
 
-export const loginUserService =async(loginData)=>{
-    console.log(loginData);
-    const email=loginData.email;
-    const password=loginData.password;
-    
-    if(email=='example@gmail.com'&& password=="123"){
-        return {message:"Login Successfull"}
-    }
-    else{
-        return{message:"Login Failed"}
-    }
-}
+export const getAllUserService = async () => {
+  return await prisma.user.findMany();
+};
 
-// export const getAllUsersService= async (dataget)=>{
-//     const usersData=[
-//         {email: "AJ@gmail.com",password:"AJ"},
-//         {email: "AC@gmail.com", password:"AC"},
-//         {email: "PB@gmail.com",password:"PB"}
-//     ];
-//     return usersData; 
-// }
-import { PrismaClient } from '@prisma/client'
+export const registerUserService = async (registerUserData) => {
+  const res = await prisma.user.create({
+    data: {
+      email: registerUserData.email,
+      fullName: registerUserData.fullName,
+      password: registerUserData.password,
+      gender: registerUserData.gender,
+    },
+  });
+  return res;
+};
 
-const prisma = new PrismaClient()
+export const loginUserService = async (loginData) => {
+  const email = loginData.email;
+  const password = loginData.password;
 
- export async function getAllUsersService() {
-  // ... you will write your Prisma Client queries here
-  const allUsers = await prisma.user.findMany()
-  return allUsers;
-}
-
-getAllUsersService()
-  .then(async () => {
-    await prisma.$disconnect()
-  })
-  .catch(async (e) => {
-    console.error(e)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
-
-export async function writeUsersService() {
-    await prisma.user.create({
-      data: {
-        id:'7',
-        fullName: 'AJ',
-        email: 'AJ@gmail.com',
-        password:'qwerty',
-        gender:'Male'
-        // posts: {
-        //   create: { title: 'Hello World' },
-        // },
-        // profile: {
-        //   create: { bio: 'I like turtles' },
-        // },
-      },
-    })
-  
-    const allUsers = await prisma.user.findMany({
-    //   include: {
-    //     posts: true,
-    //     profile: true,
-    //   },
-    })
-    console.dir(allUsers, { depth: null })
+  const user = await prisma.user.findUnique({ where:{email:email} });
+  if (!user) {
+    return { message: "Invalid credential" };
   }
+
+  const checkPasword = user.password == password;
+  if (!checkPasword) {
+    return { message: "Invalid credential" };
+  }
+
+  return { message: "Login successful", user };
+};
